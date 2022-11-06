@@ -39,7 +39,7 @@ module.exports = function(app, passport, db) {
 // message board routes ===============================================================
 
     app.post('/sub', (req, res) => {
-      db.collection('datab').findOne({user: req.user.local.email, word: req.body.userI}, (err, result) => {
+      db.collection('datab').findOne({user: req.user.local.email, word: req.body.userI, thumbUp: 0}, (err, result) => {
         if (err) return console.log(err)
         if(result){
       res.render('definiPageGo.ejs', {
@@ -51,7 +51,7 @@ module.exports = function(app, passport, db) {
     .then((res) => res.json())
     .then((data) => {
       let wordResult = data[0]["meanings"][0]['definitions'][0]['definition']
-      db.collection('datab').save({user: req.user.local.email, word: req.body.userI, definition: wordResult 
+      db.collection('datab').save({user: req.user.local.email, word: req.body.userI, definition: wordResult, thumbUp: 0 
       }, (err, result) => {
         console.log(wordResult)
       if (err) return console.log(err)
@@ -65,14 +65,13 @@ module.exports = function(app, passport, db) {
       
     })
     
-    
-
-    
-
     app.put('/messages', (req, res) => {
       console.log(req.body)
-      db.collection('messages')
-      .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {
+      db.collection('datab')
+      //tried to change to the word, definition and thumb up variables, didnt show anything. Even though these 
+      //vairables dont match anything inside the database they show a number but not in the right place and it 
+      //doesnt count up.
+      .findOneAndUpdate({user: req.user.local.email, thumbUp: req.body.thumbUp}, {
         $set: {
           thumbUp:req.body.thumbUp + 1
         }
@@ -101,7 +100,7 @@ module.exports = function(app, passport, db) {
     // })
 
     app.delete('/messages', (req, res) => {
-      db.collection('datab').findOneAndDelete({name: req.body.name, msg: req.body.msg}, (err, result) => {
+      db.collection('datab').findOneAndDelete({user: req.user.local.email}, (err, result) => {
         if (err) return res.send(500, err)
         res.send('Message deleted!')
       })
